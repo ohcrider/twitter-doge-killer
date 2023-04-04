@@ -11,27 +11,63 @@
 
 (function() {
   'use strict';
-  let tryCount = 3;
+  let homeRetry = 6;
+  let loadingRetry = 6;
+  let timer = null;
+
+  const qEl = (name) => {
+    return document.querySelectorAll(name);
+  }
+
+  const clearTimer = () => {
+    timer && clearTimeout(timer);
+  }
+
+  const rmEl = (name, retryType, timer) => {
+    const matchList = qEl(name);
+
+    // debug
+    // console.log(matchList);
+    // if match than remove.
+    if (matchList.length) {
+      matchList[0].remove();
+      // claer timeout func.
+      clearTimer();
+    } else {
+      let retry = 0;
+
+      if (retryType === 'home') {
+        homeRetry -= 1;
+        retry = homeRetry;
+      } else if (retryType === 'loading') {
+        loadingRetry -= 1;
+        retry = loadingRetry;
+      }
+      
+      if (retry >= 0) {
+        console.log(new Date());
+        console.log(`${retryType} Retry:${retry}`);
+        check();
+      } else {
+        // claer timeout func.
+        clearTimer();
+      }
+    }
+  }
 
   const check = () => {
     // timer to avoid element not rendered
-    const timer = setTimeout(() => {
-      // query all the dege position
-      const homeIcon = document.querySelectorAll("a[aria-label='Twitter']");
-      // debug
-      // console.log(homeIcon);
-
-      // if match than remove.
-      if (homeIcon.length) {
-        homeIcon[0].remove();
-        // claer timeout func.
-        clearTimeout(timer);
-      } else {
-        tryCount -= 1;
-        (tryCount > 0) && check();
-      }
+    timer = setTimeout(() => {
+      // loading icon
+      rmEl('div[aria-label="Loading…"]', 'loading');
+      // home icon
+      rmEl('a[aria-label="Twitter"]', 'home');
     }, 1000);
   }
 
-  check();
+  try {
+    check();
+  } catch (e) {
+    console.log(e);
+  }
 })();
